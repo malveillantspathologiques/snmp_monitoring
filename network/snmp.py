@@ -61,8 +61,8 @@ def get_disks_info(community, host):
     for disk_index in disk_indexes:
         disk_info = {}
         for property_name in Disk.properties():
-            if_oid = f'{property_name}.{disk_index}'
-            key_val = snmp_get_info(community, host, if_oid)
+            disk_oid = f'{property_name}.{disk_index}'
+            key_val = snmp_get_info(community, host, disk_oid)
             if key_val is None:
                 key_val = ['', f'MISSING VALUE FOR {property_name} in get_disks_info']
             disk_info[property_name] = key_val[1]
