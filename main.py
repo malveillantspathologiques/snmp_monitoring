@@ -1,6 +1,6 @@
 from domain.Process import Process
 from network.snmp import *
-
+from operation.operation import top
 
 # interfaces = []
 #
@@ -41,7 +41,6 @@ from network.snmp import *
 #     systems.append(System(system))
 #
 # print(systems)
-from operation.operation import top
 
 processes = []
 process_info = get_processes_info("HELMpAllUser9465CmA", "192.168.128.24")

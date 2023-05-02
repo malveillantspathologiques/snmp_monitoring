@@ -1,12 +1,12 @@
-def top(liste_process, size=10):
-    exhaustif_process = []
-    for process in liste_process :
-        if process in exhaustif_process :
-            index = exhaustif_process.index(process)
-            exhaustif_process[index].add(process)
+def top(processes, size=10):
+    sorted_processes = []
+    for process in processes:
+        if process in sorted_processes:
+            index = sorted_processes.index(process)
+            sorted_processes[index].add(process)
         else:
-            exhaustif_process.append(process)
+            sorted_processes.append(process)
 
-    top_cpu = sorted(exhaustif_process, reverse=True, key=lambda p: p.process_cpu_usage)
-    top_ram = sorted(exhaustif_process, reverse=True, key=lambda p: p.process_ram_usage)
+    top_cpu = sorted(sorted_processes, reverse=True, key=lambda p: p.process_cpu_usage)
+    top_ram = sorted(sorted_processes, reverse=True, key=lambda p: p.process_ram_usage)
     return top_cpu[:size], top_ram[:size]

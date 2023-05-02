@@ -117,32 +117,33 @@ def get_sys_uptime_info(community, host):
     return [sys_info]
 
 
-
-
 def get_processes_info(community, host):
     hrSWRunIndex_oid = "HOST-RESOURCES-MIB::hrSWRunIndex"
     hrSWRunName_oid = "HOST-RESOURCES-MIB::hrSWRunName"
     hrSWRunPerfCPU_oid = "HOST-RESOURCES-MIB::hrSWRunPerfCPU"
     hrSWRunPerfMem_oid = "HOST-RESOURCES-MIB::hrSWRunPerfMem"
 
+    # TODO add uptime
+
     # Get the index values and names for each running process
     hrSWRunIndex_values = [x[1][x[1].index(' ') + 1:] for x in snmp_walk_info(community, host, hrSWRunIndex_oid)]
     hrSWRunName_values = [x[1][x[1].index(' ') + 1:] for x in snmp_walk_info(community, host, hrSWRunName_oid)]
 
     # Create a dictionary mapping process IDs to process names
-    process_names = {hrSWRunIndex: hrSWRunName for hrSWRunIndex, hrSWRunName in zip(hrSWRunIndex_values, hrSWRunName_values)}
+    process_names = {hrSWRunIndex: hrSWRunName for hrSWRunIndex, hrSWRunName in
+                     zip(hrSWRunIndex_values, hrSWRunName_values)}
 
     # For each running process, get the name, CPU usage, and memory usage
     processes_info = []
     for hrSWRunIndex in hrSWRunIndex_values:
-        process_info = {'name': process_names.get(hrSWRunIndex, f'MISSING NAME FOR hrSWRunIndex={hrSWRunIndex}').strip('\"')}
+        process_info = {
+            'name': process_names.get(hrSWRunIndex, f'MISSING NAME FOR hrSWRunIndex={hrSWRunIndex}')}
         for oid, property_name in zip([hrSWRunPerfCPU_oid, hrSWRunPerfMem_oid], ['cpu', 'memory']):
             key_val = snmp_get_info(community, host, f'{oid}.{hrSWRunIndex}')
             if key_val is None:
-                key_val = ['', f'MISSING VALUE FOR {property_name} in get_processes_info']
+                key_val = ['', f'INTEGER: 0']
             process_info[property_name] = key_val[1]
 
         processes_info.append(process_info)
 
     return processes_info
-
