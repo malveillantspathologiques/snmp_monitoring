@@ -1,50 +1,28 @@
-from domain.Process import Process
+import time
+
+from domain.Statistic import Statistic
 from network.snmp import *
-from operation.operation import top
 
-# interfaces = []
-#
-# interfaces_info = get_interfaces_info("HELMpAllUser9465CmA", "192.168.128.24")
-# for interface in interfaces_info:
-#     interfaces.append(Interface(interface))
-#
-# print(interfaces)
-#
-# disks = []
-#
-# disks_info = get_disks_info("HELMpAllUser9465CmA", "192.168.128.24")
-# for disk in disks_info:
-#     disks.append(Disk(disk))
-#
-# print(disks)
+# Every 5min run the loop
+PERIOD = 60 * 5
 
-# cpus = []
-#
-# cpus_info = get_cpu_info("HELMpAllUser9465CmA", "192.168.128.24")
-# for cpu in cpus_info:
-#     cpus.append(CPU(cpu))
-#
-# print(cpus)
+while True:
+    try:
+        while True:
+            print(f'[info] requesting statistics...')
+            statistics = Statistic({
+                'if': get_interfaces_info(),
+                'disk': get_disks_info(),
+                'process': get_processes_info(),
+                'cpu': get_cpu_info(),
+                'ram': get_ram_info(),
+                'system': get_sys_uptime_info()
+            })
 
-# rams = []
-#
-# rams_info = get_ram_info("HELMpAllUser9465CmA", "192.168.128.24")
-# for ram in rams_info:
-#     rams.append(RAM(ram))
-#
-# print(rams)
-
-# systems = []
-#
-# system_info = get_sys_uptime_info("HELMpAllUser9465CmA", "192.168.128.24")
-# for system in system_info:
-#     systems.append(System(system))
-#
-# print(systems)
-
-processes = []
-process_info = get_processes_info("HELMpAllUser9465CmA", "192.168.128.24")
-for process in process_info:
-    processes.append(Process(process))
-
-print(top(processes))
+            print(f'[info] writing statistics to file...')
+            statistics.save(f'{time.strftime("%d_%m_%y__%Hh_%Mm_%Ss", time.localtime())}.json')
+            print(f'[info] waiting {PERIOD} seconds...')
+            time.sleep(PERIOD)
+    except Exception as e:
+        print(e)
+        pass

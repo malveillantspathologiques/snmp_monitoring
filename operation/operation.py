@@ -7,6 +7,6 @@ def top(processes, size=10):
         else:
             sorted_processes.append(process)
 
-    top_cpu = sorted(sorted_processes, reverse=True, key=lambda p: p.process_cpu_usage)
-    top_ram = sorted(sorted_processes, reverse=True, key=lambda p: p.process_ram_usage)
+    top_cpu = sorted(sorted_processes, reverse=True, key=lambda p: p.hr_sw_run_perf_cpu)
+    top_ram = sorted(sorted_processes, reverse=True, key=lambda p: p.hr_sw_run_perf_ram)
     return top_cpu[:size], top_ram[:size]
