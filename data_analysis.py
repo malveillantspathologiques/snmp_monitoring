@@ -3,7 +3,7 @@ from reader import LogReader
 log_entries = LogReader.read_all()
 
 if_stat = {}
-for entry in log_entries[:5]:
+for entry in log_entries:
     interfaces_stats = entry.get_interfaces()
 
     for interface in interfaces_stats:
