@@ -11,6 +11,20 @@ class RAM:
     def __repr__(self):
         return json.dumps(self.__dict__, default=str, indent=4)
 
+    def get_mem_avail_real(self):
+        return self.mem_avail_real
+
+    def get_mem_total_real(self):
+        return self.mem_total_real
+
+    def get_mem_total_free(self):
+        return self.mem_total_free
+
+    def get_mem_total_swap(self):
+        return self.mem_total_swap
+
+
+
     @classmethod
     def properties(cls):
         return [

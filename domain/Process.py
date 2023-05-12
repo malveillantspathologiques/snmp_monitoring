@@ -40,6 +40,21 @@ class Process:
         self.hr_sw_run_perf_ram += other.hr_sw_run_perf_ram
         return self
 
+    def get_hr_sw_run_index(self):
+        return self.hr_sw_run_index
+
+    def get_hr_sw_run_name(self):
+        return self.hr_sw_run_name
+
+    def get_hr_sw_run_status(self):
+        return self.hr_sw_run_status
+
+    def get_hr_sw_run_perf_cpu(self):
+        return self.hr_sw_run_perf_cpu,
+
+    def get_hr_sw_run_perf_ram(self):
+        return self.hr_sw_run_perf_ram
+
     @classmethod
     def properties(cls):
         return [
@@ -49,3 +64,14 @@ class Process:
             "HOST-RESOURCES-MIB::hrSWRunPerfCPU",
             "HOST-RESOURCES-MIB::hrSWRunPerfMem"
         ]
+
+    @classmethod
+    def from_log(cls, log):
+        data = {
+            "HOST-RESOURCES-MIB::hrSWRunIndex": log['hr_sw_run_index'],
+            "HOST-RESOURCES-MIB::hrSWRunName": log['hr_sw_run_name'],
+            "HOST-RESOURCES-MIB::hrSWRunStatus": log['hr_sw_run_status'],
+            "HOST-RESOURCES-MIB::hrSWRunPerfCPU": str(log['hr_sw_run_perf_cpu']),
+            "HOST-RESOURCES-MIB::hrSWRunPerfMem": str(log['hr_sw_run_perf_ram'])
+        }
+        return Process(data)
