@@ -50,7 +50,7 @@ class Process:
         return self.hr_sw_run_status
 
     def get_hr_sw_run_perf_cpu(self):
-        return self.hr_sw_run_perf_cpu,
+        return self.hr_sw_run_perf_cpu
 
     def get_hr_sw_run_perf_ram(self):
         return self.hr_sw_run_perf_ram

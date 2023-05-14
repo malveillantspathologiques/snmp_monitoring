@@ -67,7 +67,7 @@ def stat_disk():
             used = int(disk.get_hr_storage_used())
             total_space = int(disk.get_hr_storage_size())
             a_u = int(disk.get_storage_allocation_units()[0:4])
-            percent_used = (used*a_u)/(total_space*a_u)*100
+            percent_used = (used * a_u) / (total_space * a_u) * 100
             if percent_used == 0:
                 continue
             if index in disk_status.keys():
@@ -94,7 +94,7 @@ def stats_cpu_and_ram():
         cpu_stats.append(entry.get_cpu_stats())
         totale = float(ram.get_mem_total_real()[:-2])
         avail = float(ram.get_mem_avail_real()[:-2])
-        percent_ram_used = 100 - ((avail/totale)*100)
+        percent_ram_used = 100 - ((avail / totale) * 100)
         ram_stats.append(percent_ram_used)
     la_loads = [(float(cpu.get_la_load()) * 100) for cpu in cpu_stats]
     plt.plot(np.arange(len(ram_stats)), ram_stats, label="RAM")
@@ -107,4 +107,84 @@ def stats_cpu_and_ram():
 
 
 def process_stat():
-    pass
+    log_entries = LogReader.read_all()
+    cpu_dict = {}
+    ram_dict = {}
+    for entry in log_entries:
+        top_cpu = entry.get_processes_top_cpu()
+        top_ram = entry.get_processes_top_ram()
+
+        for process in top_cpu:
+            name = process.get_hr_sw_run_name()
+            cpu_usage = process.get_hr_sw_run_perf_cpu()
+            ram_usage = process.get_hr_sw_run_perf_ram()
+
+            if name not in cpu_dict.keys():
+                cpu_dict[name] = [cpu_usage, ram_usage, 0, 0]
+
+            if cpu_dict[name][0] <= cpu_usage:
+                cpu_dict[name][2] += cpu_usage - cpu_dict[name][0]
+            else:
+                cpu_dict[name][2] += (2 ** 32) - cpu_dict[name][0] + cpu_usage
+
+            if cpu_dict[name][1] <= ram_usage:
+                cpu_dict[name][3] += ram_usage - cpu_dict[name][1]
+            else:
+                cpu_dict[name][3] += (2 ** 32) - cpu_dict[name][1] + cpu_usage
+
+            cpu_dict[name][0] = cpu_usage
+            cpu_dict[name][1] = ram_usage
+
+        for process in top_ram:
+            name = process.get_hr_sw_run_name()
+            cpu_usage = process.get_hr_sw_run_perf_cpu()
+            ram_usage = process.get_hr_sw_run_perf_ram()
+
+            if name not in ram_dict.keys():
+                ram_dict[name] = [cpu_usage, ram_usage, 0, 0]
+
+            if ram_dict[name][0] <= cpu_usage:
+                ram_dict[name][2] += cpu_usage - ram_dict[name][0]
+            else:
+                ram_dict[name][2] += (2 ** 32) - ram_dict[name][0] + cpu_usage
+
+            if ram_dict[name][1] <= ram_usage:
+                ram_dict[name][3] += ram_usage - ram_dict[name][1]
+            else:
+                ram_dict[name][3] += (2 ** 32) - ram_dict[name][1] + cpu_usage
+
+            ram_dict[name][0] = cpu_usage
+            ram_dict[name][1] = ram_usage
+    cpu_dict.update(ram_dict)
+    conso_cpu = []
+    conso_ram = []
+    conso_merge = []
+    name = []
+    valeur_zawarudo_cpu = 0
+    valeur_zawarudo_ram = 0
+    for pname, stats in cpu_dict.items():
+        valeur_zawarudo_cpu += stats[2]
+        valeur_zawarudo_ram += stats[3]
+        if stats[2] > 0 and stats[3] > 0:
+            name.append(pname)
+            conso_cpu.append((stats[2] / valeur_zawarudo_cpu) * 100)
+            conso_ram.append((stats[3] / valeur_zawarudo_ram) * 100)
+            conso_merge.append([(stats[2] / valeur_zawarudo_cpu) * 100, (stats[3] / valeur_zawarudo_ram) * 100])
+
+    axe_x = np.arange(len(name))
+
+    # ToDo
+    # sorted_merge = sorted(conso_merge, reverse=True, key=lambda x: liste[0] + liste[1]) / 2))
+
+    plt.bar(axe_x - 0.1, conso_cpu, 0.2, label="cpu")
+    plt.bar(axe_x + 0.1, conso_ram, 0.2, label="ram")
+
+    plt.xticks(axe_x, name, rotation=90)
+    plt.xlabel("Nom des process")
+    plt.ylabel("Pourcentage du temps d'utilisation cpu/ram")
+    plt.title("Consommation totale des process")
+    plt.legend()
+    plt.show()
+
+
+process_stat()
