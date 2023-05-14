@@ -6,7 +6,7 @@ class CPU:
         self.ss_cpu_raw_user = infos['UCD-SNMP-MIB::ssCpuRawUser.0']
         self.ss_cpu_raw_system = infos['UCD-SNMP-MIB::ssCpuRawSystem.0']
         self.ss_cpu_raw_kernel = infos['UCD-SNMP-MIB::ssCpuRawKernel.0']
-        self.la_load = infos["UCD-SNMP-MIB::laLoad.1"]
+        self.la_load = infos["UCD-SNMP-MIB::laLoad.2"]
 
     def __repr__(self):
         return json.dumps(self.__dict__, default=str, indent=4)
@@ -31,3 +31,14 @@ class CPU:
             "UCD-SNMP-MIB::ssCpuRawKernel.0",
             "UCD-SNMP-MIB::laLoad.2"
         ]
+
+    @classmethod
+    def from_log(cls, log):
+        data = {
+            'UCD-SNMP-MIB::ssCpuRawUser.0': log['ss_cpu_raw_user'],
+            'UCD-SNMP-MIB::ssCpuRawSystem.0': log['ss_cpu_raw_system'],
+            'UCD-SNMP-MIB::ssCpuRawKernel.0': log['ss_cpu_raw_kernel'],
+            'UCD-SNMP-MIB::laLoad.2': log['la_load']
+
+        }
+        return CPU(data)

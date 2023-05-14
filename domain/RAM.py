@@ -23,8 +23,6 @@ class RAM:
     def get_mem_total_swap(self):
         return self.mem_total_swap
 
-
-
     @classmethod
     def properties(cls):
         return [
@@ -33,3 +31,14 @@ class RAM:
             "UCD-SNMP-MIB::memTotalFree.0",
             "UCD-SNMP-MIB::memTotalSwap.0"
         ]
+
+    @classmethod
+    def from_log(cls, log):
+        data = {
+            "UCD-SNMP-MIB::memAvailReal.0": log['mem_avail_real'],
+            "UCD-SNMP-MIB::memTotalReal.0": log['mem_total_real'],
+            "UCD-SNMP-MIB::memTotalFree.0": log['mem_total_free'],
+            "UCD-SNMP-MIB::memTotalSwap.0": log['mem_total_swap']
+
+        }
+        return RAM(data)

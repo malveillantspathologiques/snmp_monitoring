@@ -1,9 +1,11 @@
 import json
 import os
 
+from domain.CPU import CPU
 from domain.Disk import Disk
 from domain.Interface import Interface
 from domain.Process import Process
+from domain.RAM import RAM
 from domain.System import System
 
 
@@ -59,8 +61,14 @@ class LogEntry:
         for stat in processes_stats_ram:
             self.processes_top_ram.append(Process.from_log(stat))
 
+        cpu_stats = log['cpu_stats'][0]
+        self.cpu_stats = CPU.from_log(cpu_stats)
+
+        ram_stats = log['ram_stats'][0]
+        self.ram_stats = RAM.from_log(ram_stats)
+
         system_stats = log['system_stats'][0]
-        self.system_stat = System.from_log(system_stats)
+        self.system_stats = System.from_log(system_stats)
 
     def __repr__(self):
         return json.dumps(self.__dict__, default=lambda o: o.__dict__)
@@ -83,5 +91,11 @@ class LogEntry:
     def get_processes_top_ram(self):
         return self.processes_top_ram
 
-    def get_system_stat(self):
-        return self.system_stat
+    def get_cpu_stats(self):
+        return self.cpu_stats
+
+    def get_ram_stats(self):
+        return self.ram_stats
+
+    def get_system_stats(self):
+        return self.system_stats
