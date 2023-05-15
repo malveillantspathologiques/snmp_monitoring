@@ -1,7 +1,5 @@
+from graph import Drawer
 from reader import LogReader
-import matplotlib.pyplot as plt
-import numpy as np
-
 
 def stat_if():
     log_entries = LogReader.read_all()
@@ -30,27 +28,7 @@ def stat_if():
             if_stat[descr][0] = if_in
             if_stat[descr][1] = if_out
 
-    conso_in = []
-    conso_out = []
-    if_name = []
-    for desc, stats in if_stat.items():
-        if stats[2] > 0 and stats[3] > 0:
-            if_name.append(desc)
-            conso_in.append(stats[2])
-            conso_out.append(stats[3])
-
-    axe_x = np.arange(len(if_name))
-    # print(conso_out)
-    # print(conso_in)
-    plt.bar(axe_x - 0.05, conso_in, 0.1, label="Download")
-    plt.bar(axe_x + 0.05, conso_out, 0.1, label="Upload")
-
-    plt.xticks(axe_x, if_name, rotation=90)
-    plt.xlabel("Nom des interfaces")
-    plt.ylabel("Consommation en milliards d'octets")
-    plt.title("Consommation totale de chaque interface")
-    plt.legend()
-    plt.show()
+    Drawer.draw_if(if_stat)
 
 
 def stat_disk():
@@ -75,14 +53,7 @@ def stat_disk():
             else:
                 disk_status[index] = [percent_used]
 
-    for disk, percent in disk_status.items():
-        plt.plot(np.arange(len(percent)), percent, label=disk)
-    plt.xticks(np.arange(len(time_list)), time_list, rotation=40, horizontalalignment='right')
-    plt.xlabel("Temp passé par tranche de 5 min")
-    plt.ylabel("Pourcentage d'espace occupé sur les disques")
-    plt.title("Utilisation des disques")
-    plt.legend()
-    plt.show()
+    Drawer.draw_disks(disk_status, time_list)
 
 
 def stats_cpu_and_ram():
@@ -92,18 +63,12 @@ def stats_cpu_and_ram():
     for entry in log_entries:
         ram = entry.get_ram_stats()
         cpu_stats.append(entry.get_cpu_stats())
-        totale = float(ram.get_mem_total_real()[:-2])
+        total = float(ram.get_mem_total_real()[:-2])
         avail = float(ram.get_mem_avail_real()[:-2])
-        percent_ram_used = 100 - ((avail / totale) * 100)
+        percent_ram_used = 100 - ((avail / total) * 100)
         ram_stats.append(percent_ram_used)
     la_loads = [(float(cpu.get_la_load()) * 100) for cpu in cpu_stats]
-    plt.plot(np.arange(len(ram_stats)), ram_stats, label="RAM")
-    plt.plot(np.arange(len(la_loads)), la_loads, label="CPU")
-    plt.xlabel("Temp passé par tranche de 5 min")
-    plt.ylabel("Pourcentage d'utilisation")
-    plt.title("Consommation du cpu et de la ram")
-    plt.legend()
-    plt.show()
+    Drawer.draw_cpu_and_ram(ram_stats, la_loads)
 
 
 def process_stat():
@@ -159,32 +124,19 @@ def process_stat():
     conso_cpu = []
     conso_ram = []
     conso_merge = []
-    name = []
-    valeur_zawarudo_cpu = 0
-    valeur_zawarudo_ram = 0
+    names = []
+    value_zawarudo_cpu = 0
+    value_zawarudo_ram = 0
     for pname, stats in cpu_dict.items():
-        valeur_zawarudo_cpu += stats[2]
-        valeur_zawarudo_ram += stats[3]
+        value_zawarudo_cpu += stats[2]
+        value_zawarudo_ram += stats[3]
         if stats[2] > 0 and stats[3] > 0:
-            name.append(pname)
-            conso_cpu.append((stats[2] / valeur_zawarudo_cpu) * 100)
-            conso_ram.append((stats[3] / valeur_zawarudo_ram) * 100)
-            conso_merge.append([(stats[2] / valeur_zawarudo_cpu) * 100, (stats[3] / valeur_zawarudo_ram) * 100])
+            names.append(pname)
+            conso_cpu.append((stats[2] / value_zawarudo_cpu) * 100)
+            conso_ram.append((stats[3] / value_zawarudo_ram) * 100)
+            conso_merge.append([(stats[2] / value_zawarudo_cpu) * 100, (stats[3] / value_zawarudo_ram) * 100])
 
-    axe_x = np.arange(len(name))
-
-    # ToDo
-    # sorted_merge = sorted(conso_merge, reverse=True, key=lambda x: liste[0] + liste[1]) / 2))
-
-    plt.bar(axe_x - 0.1, conso_cpu, 0.2, label="cpu")
-    plt.bar(axe_x + 0.1, conso_ram, 0.2, label="ram")
-
-    plt.xticks(axe_x, name, rotation=90)
-    plt.xlabel("Nom des process")
-    plt.ylabel("Pourcentage du temps d'utilisation cpu/ram")
-    plt.title("Consommation totale des process")
-    plt.legend()
-    plt.show()
+    Drawer.draw_processes(names, conso_cpu, conso_ram)
 
 
 process_stat()
