@@ -1,6 +1,7 @@
 from graph import Drawer
 from reader import LogReader
 
+
 def stat_if():
     log_entries = LogReader.read_all()
     if_stat = {}
@@ -31,8 +32,7 @@ def stat_if():
     Drawer.draw_if(if_stat)
 
 
-def stat_disk():
-    log_entries = LogReader.read_all()
+def stat_disk(log_entries):
     disk_status = {}
     time_list = []
     for entry in log_entries:
@@ -48,10 +48,10 @@ def stat_disk():
             percent_used = (used * a_u) / (total_space * a_u) * 100
             if percent_used == 0:
                 continue
-            if index in disk_status.keys():
-                disk_status[index].append(percent_used)
+            if descr in disk_status.keys():
+                disk_status[descr].append(percent_used)
             else:
-                disk_status[index] = [percent_used]
+                disk_status[descr] = [percent_used]
 
     Drawer.draw_disks(disk_status, time_list)
 
@@ -71,13 +71,10 @@ def stats_cpu_and_ram():
     Drawer.draw_cpu_and_ram(ram_stats, la_loads)
 
 
-def process_stat():
-    log_entries = LogReader.read_all()
+def process_stat_cpu(log_entries):
     cpu_dict = {}
-    ram_dict = {}
     for entry in log_entries:
         top_cpu = entry.get_processes_top_cpu()
-        top_ram = entry.get_processes_top_ram()
 
         for process in top_cpu:
             name = process.get_hr_sw_run_name()
@@ -95,11 +92,33 @@ def process_stat():
             if cpu_dict[name][1] <= ram_usage:
                 cpu_dict[name][3] += ram_usage - cpu_dict[name][1]
             else:
-                cpu_dict[name][3] += (2 ** 32) - cpu_dict[name][1] + cpu_usage
+                cpu_dict[name][3] += (2 ** 32) - cpu_dict[name][1] + ram_usage
 
             cpu_dict[name][0] = cpu_usage
             cpu_dict[name][1] = ram_usage
 
+    conso_cpu = []
+    names = []
+    value_zawarudo_cpu = 0
+    for stats in cpu_dict.values():
+        value_zawarudo_cpu += stats[2]
+    for pname, stats in cpu_dict.items():
+        if stats[2] > 0:
+            names.append(pname)
+            conso_cpu.append((stats[2] / value_zawarudo_cpu) * 100)
+    cpu_info = {}
+    for index, name in enumerate(names):
+        cpu_info[name] = conso_cpu[index]
+    conso_cpu_sorted = {k: v for k, v in sorted(cpu_info.items(), key=lambda item: item[1], reverse=True)}
+    key = conso_cpu_sorted.keys()
+    value = conso_cpu_sorted.values()
+    Drawer.draw_processes_cpu(key, value)
+
+
+def process_stat_ram(log_entries):
+    ram_dict = {}
+    for entry in log_entries:
+        top_ram = entry.get_processes_top_ram()
         for process in top_ram:
             name = process.get_hr_sw_run_name()
             cpu_usage = process.get_hr_sw_run_perf_cpu()
@@ -116,27 +135,31 @@ def process_stat():
             if ram_dict[name][1] <= ram_usage:
                 ram_dict[name][3] += ram_usage - ram_dict[name][1]
             else:
-                ram_dict[name][3] += (2 ** 32) - ram_dict[name][1] + cpu_usage
+                ram_dict[name][3] += (2 ** 32) - ram_dict[name][1] + ram_usage
 
             ram_dict[name][0] = cpu_usage
             ram_dict[name][1] = ram_usage
-    cpu_dict.update(ram_dict)
-    conso_cpu = []
     conso_ram = []
-    conso_merge = []
     names = []
-    value_zawarudo_cpu = 0
     value_zawarudo_ram = 0
-    for pname, stats in cpu_dict.items():
-        value_zawarudo_cpu += stats[2]
+    for stats in ram_dict.values():
         value_zawarudo_ram += stats[3]
-        if stats[2] > 0 and stats[3] > 0:
+    for pname, stats in ram_dict.items():
+        if stats[3] > 0:
             names.append(pname)
-            conso_cpu.append((stats[2] / value_zawarudo_cpu) * 100)
             conso_ram.append((stats[3] / value_zawarudo_ram) * 100)
-            conso_merge.append([(stats[2] / value_zawarudo_cpu) * 100, (stats[3] / value_zawarudo_ram) * 100])
+    print(value_zawarudo_ram)
 
-    Drawer.draw_processes(names, conso_cpu, conso_ram)
+    ram_info = {}
+    for index, name in enumerate(names):
+        ram_info[name] = conso_ram[index]
+    conso_ram_sorted = {k: v for k, v in sorted(ram_info.items(), key=lambda item: item[1], reverse=True)}
+    key = conso_ram_sorted.keys()
+    value = conso_ram_sorted.values()
+    Drawer.draw_processes_ram(key, value)
 
 
-process_stat()
+log_entries = LogReader.read_all()
+
+process_stat_cpu(log_entries)
+process_stat_ram(log_entries)
